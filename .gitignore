@@ -1,0 +1,21 @@
+# Virtual environments
+venv/
+rag_env/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Chroma DB database folders (local storage)
+chroma_data/
+
+# IDE files
+.vscode/
+.idea/
+
+# Nested repositories / unrelated folders
+Pre-chain_snatching-detection/
