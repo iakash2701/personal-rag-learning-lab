@@ -1,3 +1,14 @@
+---
+title: Personal RAG Learning Lab
+emoji: 🧠
+colorFrom: indigo
+colorTo: purple
+sdk: streamlit
+sdk_version: 1.40.0
+app_file: app.py
+pinned: false
+---
+
 # 🧠 Personal RAG Learning Lab
 
 A modern, premium interactive dashboard for learning and experimenting with Retrieval-Augmented Generation (RAG) concepts. Built with Python, Streamlit, ChromaDB, and Sentence Transformers.
