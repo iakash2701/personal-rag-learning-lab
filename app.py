@@ -454,7 +454,7 @@ def load_user_rag_system(user_id: int, email: str) -> PersonalRAG:
 
 
 user_info = st.session_state.get("user_info")
-if user_info is None:
+if not st.session_state.get("authenticated") or user_info is None:
     st.stop()
 
 rag = load_user_rag_system(user_info["id"], user_info["email"])
