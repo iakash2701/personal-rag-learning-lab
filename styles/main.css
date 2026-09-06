@@ -1,0 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #09090B;
+  --bg-secondary: #0F0F12;
+  --surface: #141417;
+  --surface-elevated: #18181B;
+  --surface-hover: #202024;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --accent: #6366F1;
+  --accent-hover: #818CF8;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* Global resets */
+html, body, [class*="css"], .stApp {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  background-color: var(--bg) !important;
+  color: var(--text-primary) !important;
+}
+
+code, pre, .mono-text {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Typography Hierarchy */
+h1 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 2.25rem !important;
+  letter-spacing: -0.03em !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 0.25rem !important;
+}
+
+h2 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 650 !important;
+  font-size: 1.5rem !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 0.75rem !important;
+}
+
+h3 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 1.125rem !important;
+  letter-spacing: -0.01em !important;
+  color: var(--text-primary) !important;
+}
+
+p, span, label {
+  color: var(--text-secondary);
+}
+
+/* Sidebar styling */
+section[data-testid="stSidebar"] {
+  background-color: var(--bg-secondary) !important;
+  border-right: 1px solid var(--border) !important;
+  width: 240px !important;
+}
+
+/* Hide default streamlit chrome padding where required */
+div[data-testid="stToolbar"] {
+  display: none !important;
+}
+
+footer {
+  display: none !important;
+}
+
+/* Custom Cards */
+.saas-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.saas-card:hover {
+  border-color: var(--border-hover);
+  background-color: var(--surface-elevated);
+}
+
+/* Input Fields */
+.stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"] {
+  background-color: var(--surface-elevated) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--text-primary) !important;
+  padding: 0.65rem 0.85rem !important;
+  font-size: 0.9rem !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.stTextInput input:focus, .stTextArea textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Buttons */
+div.stButton > button {
+  background: var(--text-primary) !important;
+  color: var(--bg) !important;
+  border: 1px solid var(--text-primary) !important;
+  padding: 0.6rem 1.25rem !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: all 0.15s ease !important;
+  cursor: pointer;
+}
+
+div.stButton > button:hover {
+  background: #e4e4e7 !important;
+  border-color: #e4e4e7 !important;
+  transform: scale(0.99);
+}
+
+div.stButton > button:active {
+  transform: scale(0.97);
+}
+
+/* Secondary Button Custom Class Override */
+div.stButton > button[kind="secondary"] {
+  background: var(--surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+}
+
+div.stButton > button[kind="secondary"]:hover {
+  background: var(--surface-hover) !important;
+  border-color: var(--border-hover) !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+  gap: 4px !important;
+  background-color: var(--surface) !important;
+  padding: 4px !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--border) !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+  height: 36px !important;
+  background-color: transparent !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  padding: 0 16px !important;
+  border: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.stTabs [aria-selected="true"] {
+  background-color: var(--surface-elevated) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+
+.stTabs [data-baseweb="tab-highlight-container"] {
+  display: none !important;
+}
+
+/* Linear Search Result Row */
+.linear-result-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.linear-result-row:hover {
+  border-color: var(--border-hover);
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--accent);
+}
