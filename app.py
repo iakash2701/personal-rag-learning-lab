@@ -7,7 +7,6 @@ import streamlit as st
 import auth
 from rag_engine import PersonalRAG
 
-
 st.set_page_config(
     page_title="Personal RAG Learning Lab",
     page_icon="🧠",
@@ -16,182 +15,223 @@ st.set_page_config(
 
 auth.init_auth_state()
 
-# Custom premium styling for UI/UX
+# Modern CSS Styling for UI/UX
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     
-    /* Global font override */
     html, body, [class*="css"], .stApp {
-        font-family: 'Outfit', sans-serif !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        background-color: #090d16 !important;
     }
     
-    /* Title and description styles */
+    /* Main Gradient Titles */
     h1 {
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 700 !important;
-        background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 800 !important;
+        background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.5rem !important;
+        letter-spacing: -0.02em;
     }
-    h2, h3, h4, h5, h6 {
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 600 !important;
-        color: #f1f5f9 !important;
+    h2, h3, h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 700 !important;
+        color: #f8fafc !important;
     }
     
-    /* Style metrics with custom glass cards */
+    /* Glassmorphic Container Cards */
+    .glass-card {
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Login Card Specific */
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .login-icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+        background: rgba(99, 102, 241, 0.15);
+        padding: 1rem;
+        border-radius: 20px;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    
+    /* Input Field Styling */
+    .stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"] {
+        background-color: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 10px !important;
+        color: #f8fafc !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease !important;
+    }
+    .stTextInput input:focus, .stTextArea textarea:focus {
+        border-color: #818cf8 !important;
+        box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.25) !important;
+    }
+    
+    /* Metric Cards */
     div[data-testid="stMetric"] {
         background: rgba(30, 41, 59, 0.4) !important;
-        padding: 1.2rem !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
-        transition: all 0.3s ease !important;
+        padding: 1.25rem !important;
+        border-radius: 14px !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        transition: transform 0.2s ease !important;
     }
     div[data-testid="stMetric"]:hover {
-        transform: translateY(-2px) !important;
-        border-color: rgba(99, 102, 241, 0.3) !important;
-        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+        transform: translateY(-3px) !important;
+        border-color: rgba(129, 140, 248, 0.3) !important;
     }
     div[data-testid="stMetricValue"] {
-        font-size: 2.2rem !important;
-        font-weight: 700 !important;
-        color: #6366f1 !important;
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+        color: #818cf8 !important;
     }
     div[data-testid="stMetricLabel"] {
         font-size: 0.85rem !important;
         color: #94a3b8 !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
     }
     
     /* Modern Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px !important;
-        background-color: rgba(21, 28, 44, 0.6) !important;
-        padding: 6px !important;
-        border-radius: 10px !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background-color: rgba(15, 23, 42, 0.8) !important;
+        padding: 8px !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 42px !important;
-        white-space: pre-wrap !important;
+        height: 44px !important;
         background-color: transparent !important;
-        border-radius: 6px !important;
+        border-radius: 8px !important;
         color: #94a3b8 !important;
-        font-weight: 500 !important;
-        padding: 0 20px !important;
+        font-weight: 600 !important;
+        padding: 0 24px !important;
         transition: all 0.2s ease !important;
         border: none !important;
     }
     .stTabs [data-baseweb="tab"]:hover {
         color: #f8fafc !important;
-        background-color: rgba(255, 255, 255, 0.03) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
     }
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
         color: #ffffff !important;
-        font-weight: 600 !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2) !important;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
     }
     .stTabs [data-baseweb="tab-highlight-container"] {
         display: none !important;
     }
     
-    /* Style Buttons */
+    /* Primary Action Buttons */
     div.stButton > button {
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
         color: white !important;
         border: none !important;
-        padding: 0.6rem 1.5rem !important;
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3) !important;
-        width: 100%;
+        padding: 0.75rem 1.75rem !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.35) !important;
     }
     div.stButton > button:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.5) !important;
+        box-shadow: 0 8px 25px 0 rgba(99, 102, 241, 0.5) !important;
         background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
     }
-    div.stButton > button:active {
-        transform: translateY(1px) !important;
-    }
     
-    /* Style input elements */
-    .stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"] {
-        background-color: #0b0f19 !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 8px !important;
-        color: #f1f5f9 !important;
-        transition: border-color 0.2s !important;
-    }
-    .stTextInput input:focus, .stTextArea textarea:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 1px #6366f1 !important;
-    }
-    
-    /* Style Expander headers and content */
-    .streamlit-expanderHeader {
-        background-color: rgba(30, 41, 59, 0.3) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-radius: 8px !important;
-        font-weight: 500 !important;
-        color: #f1f5f9 !important;
-    }
-    .streamlit-expanderContent {
-        border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-        background-color: rgba(21, 28, 44, 0.2) !important;
-        border-bottom-left-radius: 8px !important;
-        border-bottom-right-radius: 8px !important;
-        padding: 1.2rem !important;
-    }
-    
-    /* Styled container cards for custom markdown */
-    .glass-card {
-        background: rgba(30, 41, 59, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Sidebar Profile Card */
+    .user-profile-card {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1rem;
         margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
-    
-    /* Table modifications */
-    .stDataFrame {
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-radius: 8px !important;
-        overflow: hidden !important;
+    .user-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: white;
+        font-size: 1.1rem;
     }
-    
+    .user-details {
+        overflow: hidden;
+    }
+    .user-name {
+        font-weight: 700;
+        color: #f8fafc;
+        font-size: 0.95rem;
+        line-height: 1.2;
+    }
+    .user-email {
+        color: #94a3b8;
+        font-size: 0.78rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # -------------------------------------------------
 # AUTHENTICATION GATE
 # -------------------------------------------------
 if not st.session_state["authenticated"]:
-    st.title("🧠 Personal RAG Learning Lab")
-    st.markdown("### Welcome! Log in with your email or register a new account.")
-    
     col1, col2, col3 = st.columns([1, 2, 1])
+
     with col2:
-        auth_tab1, auth_tab2 = st.tabs(["🔑 Login", "📝 Register Account"])
-        
+        st.markdown(
+            """
+            <div class="login-header">
+                <div class="login-icon">🧠</div>
+                <h1>Personal RAG Lab</h1>
+                <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 0.2rem;">
+                    Secure, Isolated AI-Powered Retrieval-Augmented Generation
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        auth_tab1, auth_tab2 = st.tabs(["🔑 Sign In", "📝 Create Account"])
+
         with auth_tab1:
-            st.subheader("Login with your Email & Password")
-            email_or_user_input = st.text_input("Email Address or Username", key="login_email")
-            password_input = st.text_input("Password", type="password", key="login_pass")
-            
-            st.info("💡 **Demo Credentials**: Email `admin@example.com` | Password `admin123`")
-            
-            if st.button("Log In", type="primary", use_container_width=True):
+            st.markdown("#### Log in to your account")
+            email_or_user_input = st.text_input(
+                "Email Address or Username", key="login_email"
+            )
+            password_input = st.text_input(
+                "Password", type="password", key="login_pass"
+            )
+
+            if st.button("Sign In", type="primary", use_container_width=True):
                 success, msg = auth.login(email_or_user_input, password_input)
                 if success:
                     st.success(msg)
@@ -200,24 +240,34 @@ if not st.session_state["authenticated"]:
                     st.error(msg)
 
         with auth_tab2:
-            st.subheader("Create a new account")
+            st.markdown("#### Register a new account")
             reg_email = st.text_input("Email Address", key="reg_email")
-            reg_username = st.text_input("Full Name / Username", key="reg_user")
-            reg_password = st.text_input("Choose Password", type="password", key="reg_pass")
-            confirm_password = st.text_input("Confirm Password", type="password", key="reg_pass_confirm")
-            
+            reg_username = st.text_input("Full Name", key="reg_user")
+            reg_password = st.text_input(
+                "Choose Password", type="password", key="reg_pass"
+            )
+            confirm_password = st.text_input(
+                "Confirm Password", type="password", key="reg_pass_confirm"
+            )
+
             if st.button("Create Account", use_container_width=True):
                 if reg_password != confirm_password:
                     st.error("Passwords do not match!")
                 else:
-                    success, msg = auth.register_user(reg_email, reg_username, reg_password)
+                    success, msg = auth.register_user(
+                        reg_email, reg_username, reg_password
+                    )
                     if success:
                         st.success(msg)
                     else:
                         st.error(msg)
+
     st.stop()
 
 
+# -------------------------------------------------
+# AUTHENTICATED USER SESSION
+# -------------------------------------------------
 @st.cache_resource
 def load_user_rag_system(user_id: int, email: str) -> PersonalRAG:
     """Load isolated vector database instance per logged-in user."""
@@ -230,54 +280,76 @@ def load_user_rag_system(user_id: int, email: str) -> PersonalRAG:
     )
 
 
-user_info = st.session_state["user_info"]
+user_info = st.session_state.get("user_info")
+if user_info is None:
+    st.stop()
+
 rag = load_user_rag_system(user_info["id"], user_info["email"])
 
-# Sidebar Layout for user details, statistics and quick guide
+# Sidebar Layout
 with st.sidebar:
-    st.markdown("### 🧠 Personal RAG System")
-    st.markdown(f"👤 **User:** `{user_info['username']}`")
-    st.markdown(f"📧 **Email:** `{user_info['email']}`")
-    if st.button("🚪 Logout", use_container_width=True):
+    st.markdown("### 🧠 RAG Learning Lab")
+
+    initials = (
+        user_info["username"][:2].upper() if user_info["username"] else "U"
+    )
+    st.markdown(
+        f"""
+        <div class="user-profile-card">
+            <div class="user-avatar">{initials}</div>
+            <div class="user-details">
+                <div class="user-name">{user_info['username']}</div>
+                <div class="user-email">{user_info['email']}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if st.button("🚪 Sign Out", use_container_width=True):
         auth.logout()
         st.rerun()
 
     st.markdown("---")
     st.metric(
-        label="Chunks stored in Vector DB",
+        label="Isolated Chunks in DB",
         value=rag.database_count(),
     )
     st.markdown("---")
     st.markdown(
         """
-        #### ⚙️ Quick Navigation
-        Use the tabs on the right to navigate:
-        1. **Add Information**: Input facts, define category, chunk size and overlap, and generate embeddings.
-        2. **Semantic Search**: Ask a natural question and let the vector DB retrieve similar context chunks.
-        3. **Vector Database**: Explore, filter, inspect raw embeddings, or reset the collection.
-        4. **How It Works**: Understand the full text-to-embedding-to-retrieval pipeline.
+        #### ⚙️ Features
+        1. **Add Information**: Input notes, chunk text, generate vector embeddings.
+        2. **Semantic Search**: Retrieve context chunks by cosine similarity.
+        3. **Vector DB Explorer**: Inspect raw vectors and metadata schemas.
+        4. **Pipeline Diagram**: Understand the full RAG workflow.
         """
     )
     st.markdown("---")
     st.markdown(
         """
         <div style="font-size: 0.8rem; color: #64748b; text-align: center;">
-            Personal RAG Learning Lab v1.1.0
+            Personal RAG Learning Lab v1.2.0
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
+# Dashboard Main Header
 st.title("🧠 Personal RAG Learning Lab")
 
 st.markdown(
-    """
-    <div style='margin-bottom: 1.5rem; color: #94a3b8;'>
-        Add your personal information, convert it into embeddings, store it in 
-        ChromaDB and search it using semantic similarity.
+    f"""
+    <div style='margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;'>
+        <span style='color: #94a3b8;'>
+            Store facts, convert to vectors in ChromaDB, and query using semantic similarity.
+        </span>
+        <span style='background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;'>
+            🟢 Isolated DB Active
+        </span>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 tab1, tab2, tab3, tab4 = st.tabs(
@@ -294,11 +366,11 @@ tab1, tab2, tab3, tab4 = st.tabs(
 # TAB 1: ADD INFORMATION
 # -------------------------------------------------
 with tab1:
-    st.header("Add your personal information")
+    st.header("Add information to your database")
 
     title = st.text_input(
         "Title",
-        placeholder="Example: Predictive Maintenance Project",
+        placeholder="Example: Predictive Maintenance Project Notes",
     )
 
     category = st.selectbox(
@@ -317,12 +389,12 @@ with tab1:
     )
 
     information = st.text_area(
-        "Enter information",
-        height=250,
+        "Enter text content",
+        height=220,
         placeholder=(
             "Example:\n"
             "I developed a predictive maintenance system using "
-            "Random Forest and Isolation Forest..."
+            "Random Forest and Isolation Forest to detect machine faults..."
         ),
     )
 
@@ -330,7 +402,7 @@ with tab1:
 
     with col1:
         chunk_size = st.slider(
-            "Chunk size in words",
+            "Chunk size (words)",
             min_value=30,
             max_value=300,
             value=100,
@@ -339,7 +411,7 @@ with tab1:
 
     with col2:
         overlap = st.slider(
-            "Chunk overlap in words",
+            "Chunk overlap (words)",
             min_value=0,
             max_value=50,
             value=20,
@@ -347,7 +419,7 @@ with tab1:
         )
 
     if st.button(
-        "Generate Embeddings and Store",
+        "Generate Embeddings & Save to DB",
         type="primary",
         use_container_width=True,
     ):
@@ -361,26 +433,22 @@ with tab1:
             )
 
             st.success(
-                f"Stored {len(result['chunks'])} chunks successfully."
+                f"Successfully stored {len(result['chunks'])} chunk(s) in your isolated database."
             )
 
-            st.subheader("Generated chunks")
+            st.subheader("Generated Chunks & Embeddings")
 
             for index, chunk in enumerate(result["chunks"]):
                 with st.expander(
-                    f"Chunk {index + 1}",
+                    f"📦 Chunk {index + 1}",
                     expanded=True,
                 ):
                     st.write(chunk)
 
                     embedding = result["embeddings"][index]
 
-                    st.write(
-                        f"Embedding dimension: {len(embedding)}"
-                    )
-
-                    st.write("First 20 embedding values:")
-
+                    st.write(f"**Embedding Dimension**: `{len(embedding)}`")
+                    st.write("**First 20 Embedding Values:**")
                     st.code(
                         str(
                             [
@@ -390,9 +458,7 @@ with tab1:
                         )
                     )
 
-                    with st.expander(
-                        "View complete embedding"
-                    ):
+                    with st.expander("View Complete Vector Embedding"):
                         st.write(embedding.tolist())
 
         except ValueError as error:
@@ -406,22 +472,22 @@ with tab1:
 # TAB 2: SEARCH
 # -------------------------------------------------
 with tab2:
-    st.header("Semantic search")
+    st.header("Semantic similarity search")
 
     question = st.text_input(
-        "Ask a question about your information",
+        "Ask a question about your stored information",
         placeholder="Example: Which project uses anomaly detection?",
     )
 
     top_k = st.slider(
-        "Number of chunks to retrieve",
+        "Number of matching chunks to retrieve",
         min_value=1,
         max_value=10,
         value=3,
     )
 
     if st.button(
-        "Search Vector Database",
+        "Run Semantic Search",
         type="primary",
         use_container_width=True,
     ):
@@ -431,19 +497,13 @@ with tab2:
                 number_of_results=top_k,
             )
 
-            st.subheader("Question")
+            st.subheader("Query")
             st.info(result["question"])
 
-            st.subheader("Query embedding")
-
+            st.subheader("Query Vector Embedding")
             query_embedding = result["query_embedding"]
-
-            st.write(
-                f"Embedding dimension: {len(query_embedding)}"
-            )
-
-            st.write("First 20 values:")
-
+            st.write(f"**Embedding Dimension**: `{len(query_embedding)}`")
+            st.write("**First 20 Vector Values:**")
             st.code(
                 str(
                     [
@@ -453,41 +513,25 @@ with tab2:
                 )
             )
 
-            with st.expander("View complete query embedding"):
+            with st.expander("View Complete Query Vector"):
                 st.write(query_embedding.tolist())
 
-            st.subheader("Similarity results")
+            st.subheader("Similarity Search Results")
 
             similarity_table = []
-
-            for position, match in enumerate(
-                result["matches"],
-                start=1,
-            ):
+            for position, match in enumerate(result["matches"], start=1):
                 metadata = match["metadata"]
-
                 similarity_table.append(
                     {
                         "Rank": position,
-                        "Title": metadata.get(
-                            "title",
-                            "Unknown",
-                        ),
-                        "Category": metadata.get(
-                            "category",
-                            "Unknown",
-                        ),
-                        "Chunk": metadata.get(
-                            "chunk_number",
-                            "Unknown",
-                        ),
+                        "Title": metadata.get("title", "Unknown"),
+                        "Category": metadata.get("category", "Unknown"),
+                        "Chunk": metadata.get("chunk_number", "Unknown"),
                         "Cosine Similarity": round(
-                            match["cosine_similarity"],
-                            4,
+                            match["cosine_similarity"], 4
                         ),
                         "Database Distance": round(
-                            match["database_distance"],
-                            4,
+                            match["database_distance"], 4
                         ),
                     }
                 )
@@ -498,32 +542,25 @@ with tab2:
                 hide_index=True,
             )
 
-            for position, match in enumerate(
-                result["matches"],
-                start=1,
-            ):
+            for position, match in enumerate(result["matches"], start=1):
                 similarity = match["cosine_similarity"]
                 metadata = match["metadata"]
 
-                # Dynamic badge color based on similarity score
                 if similarity >= 0.7:
-                    badge_color = "#10b981"  # Emerald green
+                    badge_color = "#10b981"
                 elif similarity >= 0.4:
-                    badge_color = "#f59e0b"  # Amber/Yellow
+                    badge_color = "#f59e0b"
                 else:
-                    badge_color = "#ef4444"  # Red
+                    badge_color = "#ef4444"
 
                 with st.expander(
-                    (
-                        f"Result {position} — "
-                        f"Similarity: {similarity:.4f}"
-                    ),
+                    f"Result #{position} — Cosine Similarity: {similarity:.4f}",
                     expanded=(position == 1),
                 ):
                     st.markdown(
                         f"""
                         <div style='margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;'>
-                            <span style='background: {badge_color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;'>
+                            <span style='background: {badge_color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;'>
                                 {metadata.get("category", "General").upper()}
                             </span>
                             <span style='color: #94a3b8; font-size: 0.85rem;'>
@@ -535,37 +572,23 @@ with tab2:
                     )
                     st.markdown(
                         f"""
-                        <div style='background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 6px; border-left: 3px solid #6366f1; margin-bottom: 8px; line-height: 1.5; color: #cbd5e1;'>
+                        <div style='background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: 8px; border-left: 3px solid #818cf8; margin-bottom: 8px; line-height: 1.6; color: #cbd5e1;'>
                             {match["text"]}
                         </div>
                         """,
                         unsafe_allow_html=True,
                     )
 
-            st.subheader("Retrieved context")
-
+            st.subheader("Retrieved Context Window")
             st.text_area(
-                "This context will later be sent to the LLM",
+                "This aggregated context block is supplied to the LLM for answer generation",
                 value=result["context"],
-                height=250,
+                height=220,
                 disabled=True,
-            )
-
-            st.subheader("Current answer")
-
-            st.info(
-                """
-                Retrieval is working. The chunks above are the
-                information found by semantic search.
-
-                In the next stage, we will send this context and
-                your question to an LLM to generate a natural answer.
-                """
             )
 
         except ValueError as error:
             st.error(str(error))
-
         except Exception as error:
             st.exception(error)
 
@@ -574,18 +597,17 @@ with tab2:
 # TAB 3: DATABASE EXPLORER
 # -------------------------------------------------
 with tab3:
-    st.header("Vector database explorer")
+    st.header("Vector database inspector")
 
     st.write(
-        f"Total stored chunks: **{rag.database_count()}**"
+        f"Total stored chunks in your isolated database: **{rag.database_count()}**"
     )
 
-    if st.button("Refresh database records"):
+    if st.button("Refresh Database Records"):
         st.rerun()
 
     if rag.database_count() > 0:
         records = rag.get_all_records()
-
         table_rows = []
 
         for index, record_id in enumerate(records["ids"]):
@@ -599,7 +621,7 @@ with tab3:
                     "Title": metadata.get("title"),
                     "Category": metadata.get("category"),
                     "Chunk": metadata.get("chunk_number"),
-                    "Words": len(document.split()),
+                    "Word Count": len(document.split()),
                     "Embedding Dimension": len(embedding),
                 }
             )
@@ -610,7 +632,7 @@ with tab3:
             hide_index=True,
         )
 
-        st.subheader("Inspect individual records")
+        st.subheader("Inspect Record Detail")
 
         for index, record_id in enumerate(records["ids"]):
             metadata = records["metadatas"][index]
@@ -622,11 +644,13 @@ with tab3:
             total_chunks = metadata.get("total_chunks", 1)
             category = metadata.get("category", "General")
 
-            with st.expander(f"📦 {title_display} (Chunk {chunk_num}/{total_chunks}) — {record_id[:8]}..."):
+            with st.expander(
+                f"📦 {title_display} (Chunk {chunk_num}/{total_chunks}) — ID: {record_id[:8]}..."
+            ):
                 st.markdown(
                     f"""
                     <div style='margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;'>
-                        <span style='background: #6366f1; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;'>
+                        <span style='background: #818cf8; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;'>
                             {category.upper()}
                         </span>
                         <span style='color: #94a3b8; font-size: 0.85rem;'>
@@ -636,10 +660,10 @@ with tab3:
                     """,
                     unsafe_allow_html=True,
                 )
-                
+
                 st.markdown(
                     f"""
-                    <div style='background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 6px; border-left: 3px solid #a855f7; margin-bottom: 8px; line-height: 1.5; color: #cbd5e1;'>
+                    <div style='background: rgba(255, 255, 255, 0.02); padding: 14px; border-radius: 8px; border-left: 3px solid #c084fc; margin-bottom: 8px; line-height: 1.6; color: #cbd5e1;'>
                         {document}
                     </div>
                     """,
@@ -647,7 +671,7 @@ with tab3:
                 )
 
                 st.write(f"**Embedding Dimension**: `{len(embedding)}`")
-                st.write("**First 20 values:**")
+                st.write("**First 20 Vector Values:**")
                 st.code(
                     str(
                         [
@@ -660,80 +684,64 @@ with tab3:
         st.divider()
 
         confirmation = st.checkbox(
-            "I understand that this will delete all records."
+            "I understand that this will permanently clear my isolated database."
         )
 
         if st.button(
-            "Clear Vector Database",
+            "Clear My Isolated Database",
             disabled=not confirmation,
         ):
             rag.clear_database()
-            st.success("Vector database cleared.")
+            st.success("Your vector database has been cleared.")
             st.rerun()
 
     else:
-        st.warning(
-            "The vector database is empty. Add information first."
-        )
+        st.warning("Your vector database is empty. Add information first.")
 
 
 # -------------------------------------------------
-# TAB 4: EXPLANATION
+# TAB 4: HOW IT WORKS
 # -------------------------------------------------
 with tab4:
-    st.header("How the system works")
+    st.header("How the Personal RAG system works")
 
     st.code(
         """
-Personal Information
+Personal Information / Documents
         ↓
-Text Cleaning
+Text Cleaning & Preprocessing
         ↓
-Chunking
+Word Chunking (with overlap)
         ↓
-Sentence Transformer
+Sentence Transformer (all-MiniLM-L6-v2)
         ↓
-Embedding Vectors
+Vector Embeddings (384 dimensions)
         ↓
-ChromaDB
+Isolated ChromaDB Collection
         ↓
-User Question
+User Natural Language Question
         ↓
-Question Embedding
+Question Vector Embedding
         ↓
-Similarity Search
+Cosine Similarity Search
         ↓
-Top Matching Chunks
+Top Matching Context Chunks
         ↓
-Retrieved Context
+Aggregated Context Window
         ↓
-LLM — added in the next stage
+LLM Generation (Next Stage)
         ↓
-Final RAG Answer
+Final Verified Answer
         """,
         language="text",
     )
 
-    st.subheader("Current project stage")
-
+    st.subheader("System Architecture")
     st.success(
         """
-        This version implements:
-
-        • Text input  
-        • Text cleaning  
-        • Chunking  
-        • Embedding generation  
-        • Persistent vector storage  
-        • Semantic search  
-        • Cosine similarity display  
-        • Retrieved context display
-        """
-    )
-
-    st.warning(
-        """
-        The final LLM generation is intentionally not added yet.
-        First verify that storage and retrieval work correctly.
+        • **SQLite Authentication**: Email & Password registration with PBKDF2 password hashing.  
+        • **Per-User Isolation**: Each account accesses a dedicated ChromaDB directory.  
+        • **Dynamic Vectorization**: Normalizes embeddings for fast dot-product similarity calculations.  
+        • **Interactive Inspector**: Inspect raw vector slices and document metadata in real-time.
         """
     )
