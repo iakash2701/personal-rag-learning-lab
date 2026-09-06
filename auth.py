@@ -1,17 +1,57 @@
 from __future__ import annotations
 
 import hashlib
-import json
-import os
+import re
 import secrets
+import sqlite3
 from pathlib import Path
 import streamlit as st
 
-USERS_FILE = Path("users.json")
+DB_PATH = Path("users.db")
+
+
+def get_db_connection() -> sqlite3.Connection:
+    """Get SQLite database connection with row factory."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db() -> None:
+    """Initialize SQLite users table and default admin account if empty."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                username TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.commit()
+
+        # Check if table is empty
+        cursor.execute("SELECT COUNT(*) FROM users")
+        if cursor.fetchone()[0] == 0:
+            # Create default admin user
+            hash_hex, salt_hex = _hash_password("admin123")
+            cursor.execute(
+                """
+                INSERT INTO users (email, username, password_hash, salt)
+                VALUES (?, ?, ?, ?)
+                """,
+                ("admin@example.com", "Admin", hash_hex, salt_hex),
+            )
+            conn.commit()
 
 
 def _hash_password(password: str, salt: bytes | None = None) -> tuple[str, str]:
-    """Hash password using PBKDF2-HMAC-SHA256 with salt."""
+    """Hash password using PBKDF2-HMAC-SHA256 with 16-byte salt."""
     if salt is None:
         salt = secrets.token_bytes(16)
     key = hashlib.pbkdf2_hmac(
@@ -23,86 +63,91 @@ def _hash_password(password: str, salt: bytes | None = None) -> tuple[str, str]:
     return key.hex(), salt.hex()
 
 
-def load_users() -> dict[str, dict[str, str]]:
-    """Load users database from file or initialize with default admin."""
-    if not USERS_FILE.exists():
-        # Create default admin user
-        hash_hex, salt_hex = _hash_password("admin123")
-        default_users = {
-            "admin": {
-                "hash": hash_hex,
-                "salt": salt_hex,
-            }
-        }
-        save_users(default_users)
-        return default_users
-
-    try:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
+def is_valid_email(email: str) -> bool:
+    """Validate email format using regex."""
+    pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    return bool(re.match(pattern, email.strip()))
 
 
-def save_users(users: dict[str, dict[str, str]]) -> None:
-    """Save users dictionary to JSON file."""
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(users, f, indent=2)
+def register_user(email: str, username: str, password: str) -> tuple[bool, str]:
+    """Register a new user in SQLite database."""
+    email = email.strip().lower()
+    username = username.strip()
 
-
-def register_user(username: str, password: str) -> tuple[bool, str]:
-    """Register a new user account."""
-    username = username.strip().lower()
+    if not is_valid_email(email):
+        return False, "Please enter a valid email address."
     if not username:
         return False, "Username cannot be empty."
     if len(password) < 4:
         return False, "Password must be at least 4 characters long."
 
-    users = load_users()
-    if username in users:
-        return False, "Username already exists."
-
     hash_hex, salt_hex = _hash_password(password)
-    users[username] = {
-        "hash": hash_hex,
-        "salt": salt_hex,
-    }
-    save_users(users)
-    return True, f"Account '{username}' created successfully! You can now log in."
+
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO users (email, username, password_hash, salt)
+                VALUES (?, ?, ?, ?)
+                """,
+                (email, username, hash_hex, salt_hex),
+            )
+            conn.commit()
+        return True, f"Account created successfully for {email}! You can now log in."
+    except sqlite3.IntegrityError:
+        return False, f"An account with email '{email}' already exists."
+    except Exception as e:
+        return False, f"Error creating account: {str(e)}"
 
 
-def verify_user(username: str, password: str) -> bool:
-    """Verify username and password."""
-    username = username.strip().lower()
-    users = load_users()
-    user = users.get(username)
-    if not user:
-        return False
+def verify_login(email_or_username: str, password: str) -> dict | None:
+    """Verify user credentials against SQLite database."""
+    query = email_or_username.strip().lower()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM users WHERE LOWER(email) = ? OR LOWER(username) = ?",
+            (query, query),
+        )
+        user = cursor.fetchone()
 
-    stored_hash = user.get("hash")
-    stored_salt = bytes.fromhex(user.get("salt", ""))
-    test_hash, _ = _hash_password(password, stored_salt)
-    return secrets.compare_digest(stored_hash, test_hash)
+        if not user:
+            return None
+
+        stored_hash = user["password_hash"]
+        stored_salt = bytes.fromhex(user["salt"])
+        test_hash, _ = _hash_password(password, stored_salt)
+
+        if secrets.compare_digest(stored_hash, test_hash):
+            return {
+                "id": user["id"],
+                "email": user["email"],
+                "username": user["username"],
+            }
+        return None
 
 
 def init_auth_state() -> None:
-    """Initialize authentication keys in Streamlit session state."""
+    """Initialize SQLite DB and Streamlit session state."""
+    init_db()
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
-    if "user" not in st.session_state:
-        st.session_state["user"] = None
+    if "user_info" not in st.session_state:
+        st.session_state["user_info"] = None
 
 
-def login(username: str, password: str) -> tuple[bool, str]:
-    """Attempt to log user in."""
-    if verify_user(username, password):
+def login(email_or_username: str, password: str) -> tuple[bool, str]:
+    """Attempt login and store user object in session state."""
+    user = verify_login(email_or_username, password)
+    if user:
         st.session_state["authenticated"] = True
-        st.session_state["user"] = username.strip().lower()
-        return True, f"Welcome back, {username}!"
-    return False, "Invalid username or password."
+        st.session_state["user_info"] = user
+        return True, f"Welcome back, {user['username']}!"
+    return False, "Invalid email/username or password."
 
 
 def logout() -> None:
     """Log out current user."""
     st.session_state["authenticated"] = False
-    st.session_state["user"] = None
+    st.session_state["user_info"] = None

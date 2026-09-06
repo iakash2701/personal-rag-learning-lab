@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import pandas as pd
 import streamlit as st
 
@@ -177,21 +178,21 @@ st.markdown(
 # -------------------------------------------------
 if not st.session_state["authenticated"]:
     st.title("🧠 Personal RAG Learning Lab")
-    st.markdown("### Welcome! Please log in or create an account to access the lab.")
+    st.markdown("### Welcome! Log in with your email or register a new account.")
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         auth_tab1, auth_tab2 = st.tabs(["🔑 Login", "📝 Register Account"])
         
         with auth_tab1:
-            st.subheader("Login to your account")
-            username_input = st.text_input("Username", key="login_user")
+            st.subheader("Login with your Email & Password")
+            email_or_user_input = st.text_input("Email Address or Username", key="login_email")
             password_input = st.text_input("Password", type="password", key="login_pass")
             
-            st.info("💡 **Demo Credentials**: Username `admin` | Password `admin123`")
+            st.info("💡 **Demo Credentials**: Email `admin@example.com` | Password `admin123`")
             
             if st.button("Log In", type="primary", use_container_width=True):
-                success, msg = auth.login(username_input, password_input)
+                success, msg = auth.login(email_or_user_input, password_input)
                 if success:
                     st.success(msg)
                     st.rerun()
@@ -200,15 +201,16 @@ if not st.session_state["authenticated"]:
 
         with auth_tab2:
             st.subheader("Create a new account")
-            new_username = st.text_input("Choose Username", key="reg_user")
-            new_password = st.text_input("Choose Password", type="password", key="reg_pass")
+            reg_email = st.text_input("Email Address", key="reg_email")
+            reg_username = st.text_input("Full Name / Username", key="reg_user")
+            reg_password = st.text_input("Choose Password", type="password", key="reg_pass")
             confirm_password = st.text_input("Confirm Password", type="password", key="reg_pass_confirm")
             
             if st.button("Create Account", use_container_width=True):
-                if new_password != confirm_password:
+                if reg_password != confirm_password:
                     st.error("Passwords do not match!")
                 else:
-                    success, msg = auth.register_user(new_username, new_password)
+                    success, msg = auth.register_user(reg_email, reg_username, reg_password)
                     if success:
                         st.success(msg)
                     else:
@@ -217,16 +219,25 @@ if not st.session_state["authenticated"]:
 
 
 @st.cache_resource
-def load_rag_system() -> PersonalRAG:
-    """Load the embedding model and database only once."""
-    return PersonalRAG()
+def load_user_rag_system(user_id: int, email: str) -> PersonalRAG:
+    """Load isolated vector database instance per logged-in user."""
+    safe_email = re.sub(r"[^a-zA-Z0-9_-]", "_", email.lower())
+    user_db_path = f"./chroma_data/user_{user_id}_{safe_email}"
+    collection_name = f"rag_user_{user_id}"
+    return PersonalRAG(
+        database_path=user_db_path,
+        collection_name=collection_name,
+    )
 
-rag = load_rag_system()
 
-# Sidebar Layout for statistics, user info and quick guide
+user_info = st.session_state["user_info"]
+rag = load_user_rag_system(user_info["id"], user_info["email"])
+
+# Sidebar Layout for user details, statistics and quick guide
 with st.sidebar:
     st.markdown("### 🧠 Personal RAG System")
-    st.markdown(f"👤 **Logged in as:** `{st.session_state['user']}`")
+    st.markdown(f"👤 **User:** `{user_info['username']}`")
+    st.markdown(f"📧 **Email:** `{user_info['email']}`")
     if st.button("🚪 Logout", use_container_width=True):
         auth.logout()
         st.rerun()
