@@ -20,14 +20,14 @@ from utils.constants import (
 from components.sidebar import render_sidebar
 from components.header import render_header
 
-from pages.overview import render_overview
-from pages.knowledge import render_knowledge
-from pages.documents import render_documents
-from pages.search import render_search
-from pages.assistant import render_assistant
-from pages.database import render_database
-from pages.pipeline import render_pipeline
-from pages.settings import render_settings
+from views.overview import render_overview
+from views.knowledge import render_knowledge
+from views.documents import render_documents
+from views.search import render_search
+from views.assistant import render_assistant
+from views.database import render_database
+from views.pipeline import render_pipeline
+from views.settings import render_settings
 
 # -------------------------------------------------
 # PAGE CONFIGURATION

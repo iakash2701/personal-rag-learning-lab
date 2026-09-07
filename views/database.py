@@ -66,7 +66,7 @@ def render_database(rag_engine, user_info: dict) -> None:
         st.markdown("<p style='font-size: 0.85rem; color: #71717A;'>Permanently clear all indexed vectors from your isolated collection.</p>", unsafe_allow_html=True)
 
         confirm_clear = st.checkbox("I confirm that I want to delete all vectors from my database.")
-        if st.button("Clear Vector Database", disabled=not confirm_clear, kind="secondary"):
+        if st.button("Clear Vector Database", disabled=not confirm_clear):
             rag_engine.clear_database()
             st.success("Your isolated vector database has been cleared.")
             st.rerun()

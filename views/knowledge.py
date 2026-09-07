@@ -64,7 +64,6 @@ def render_knowledge(rag_engine) -> None:
         progress_text = st.empty()
         progress_bar = st.progress(0)
 
-        # Ingestion Pipeline Progress Steps
         progress_text.markdown("<b>Processing Document</b><br>✓ Text extracted", unsafe_allow_html=True)
         progress_bar.progress(25)
         time.sleep(0.2)

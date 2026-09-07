@@ -44,7 +44,6 @@ def render_search(rag_engine) -> None:
             result = rag_engine.search(question=question, number_of_results=top_k)
             elapsed = time.time() - start_time
 
-            # Increment search counter in session state
             st.session_state["search_count"] = st.session_state.get("search_count", 0) + 1
 
             st.markdown(
